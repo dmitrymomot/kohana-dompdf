@@ -12,12 +12,12 @@ Simple HTML to PDF converter based on DOMPDF for Kohana Framework 3.2
 	// Create class instance PDF
 	$pdf = PDF::factory($html);
 	
-	// Render and save pdf
+	// Render and save PDF
 	$pdf = $pdf->render()->save('your/path/upload', 'filename'); 
 	
 	// OR
 	
-	// Render and output client pdf-file
+	// Render and streams the PDF to the client
 	$pdf = $pdf->render()->load('filename'); 
 	
 </pre>
