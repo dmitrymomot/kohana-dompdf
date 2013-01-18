@@ -23,11 +23,9 @@ class Kohana_PDF {
 	protected $dompdf;
 
 	/**
-	 * HTML, из которого будет генерироваться PDF
-	 *
-	 * @var string
+	 * Настройки класса
 	 */
-	protected $html;
+	protected $config;
 
 	/**
 	 * Конструктор (#кеп)
@@ -39,7 +37,13 @@ class Kohana_PDF {
 		$this->dompdf 	= new DOMPDF();
 
 		// Формируется "правильный" html, из которого будет формироваться pdf
-		$this->html = View::factory('html2pdf/base')->set('content', $html)->render();
+		$html = View::factory('html2pdf/base')->set('content', $html)->render();
+
+		// Загрузка html в метод load_html() класса DOMPDF
+		$this->dompdf->load_html($html);
+
+		// Загрузка настроек
+		$this->config = Kohana::$config->load('html2pdf');
 	}
 
 	/**
@@ -60,7 +64,6 @@ class Kohana_PDF {
 	 */
 	public function render()
 	{
-		$this->dompdf->load_html($this->html);
 		$this->dompdf->render();
 
 		return $this;
@@ -71,9 +74,23 @@ class Kohana_PDF {
 	 *
 	 * @return boolean
 	 */
-	public function save($path, $name)
+	public function save($path = NULL, $name = NULL)
 	{
+		$pdf = $this->dompdf->output();
 
+		if($name == NULL)
+		{
+			$name = time();
+		}
+
+		if($path == NULL)
+		{
+			$path = $this->config->upload_path;
+		}
+
+		$filename = $this->get_dir(UTF8::trim($path, '/')) . DIRECTORY_SEPARATOR . UTF8::trim($name, '/') . self::EXT;
+
+		return (file_put_contents($filename, $pdf));
 	}
 
 	/**
@@ -91,4 +108,22 @@ class Kohana_PDF {
 		return $this->dompdf->stream($name . self::EXT);
 	}
 
+	/**
+	 * @param string $dir - your/path
+	 * @return string
+	 */
+	private function get_dir($dir)
+	{
+		if ( ! is_dir($dir) )
+		{
+			mkdir($dir, 0777, TRUE);
+		}
+
+		if ( ! is_writable($dir))
+		{
+			chmod($dir, 0777);
+		}
+
+		return $dir;
+	}
 }
