@@ -4,7 +4,7 @@ html2pdf
 Simple HTML to PDF converter based on DOMPDF for Kohana Framework 3.2
 
 ---------------------------------------------------------------------
-``Example``
+<h3>Example</h3>
 <pre>
 	// Create html from your template
 	$html = View::factory('site/feedback/form/1')->render();
