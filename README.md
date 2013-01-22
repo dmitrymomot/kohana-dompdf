@@ -21,3 +21,12 @@ Simple HTML to PDF converter based on DOMPDF for Kohana Framework 3.2
 	$pdf = $pdf->render()->load('filename'); 
 	
 </pre>
+
+---------------------------------------------------------------------
+If:
+<code>Fatal error: Class ‘DOMDocument’ not found</code>
+
+<b>Solution:</b> you must install the PHP5 - php5-dom
+
+For CentOS
+<code>$ yum install php-xml</code>

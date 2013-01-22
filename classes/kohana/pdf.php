@@ -28,6 +28,11 @@ class Kohana_PDF {
 	protected $config;
 
 	/**
+	 * имя PDF-файла
+	 */
+	protected $_filename;
+
+	/**
 	 * Конструктор (#кеп)
 	 * Создает экземпляр класса DOMPDF
 	 */
@@ -55,6 +60,38 @@ class Kohana_PDF {
 	public static function factory($html)
 	{
 		return new PDF($html);
+	}
+
+	/*
+	 * @return string filename
+	 */
+	public function get_filename()
+	{
+		if ( ! isset($this->_filename) )
+		{
+			$this->set_filename();
+		}
+
+		return $this->_filename;
+	}
+
+	/*
+	 * @return class instance
+	 */
+	public function set_filename( $filename = NULL )
+	{
+		if ($filename != NULL)
+		{
+			$filename = UTF8::trim(str_replace('.pdf', '', strtolower($filename)), '/');
+
+			$this->_filename = $filename . self::EXT;
+		}
+		else
+		{
+			$this->_filename = time() . self::EXT;
+		}
+
+		return $this;
 	}
 
 	/**
@@ -88,9 +125,14 @@ class Kohana_PDF {
 			$path = $this->config->upload_path;
 		}
 
-		$filename = $this->get_dir(UTF8::trim($path, '/')) . DIRECTORY_SEPARATOR . UTF8::trim($name, '/') . self::EXT;
+		$filename = $this->get_dir(UTF8::trim($path, '/')) . DIRECTORY_SEPARATOR . $this->get_filename();
 
-		return (file_put_contents($filename, $pdf));
+		if(file_put_contents($filename, $pdf))
+		{
+			return UTF8::trim($path, '/') .'/'. $this->get_filename();
+		}
+
+		return FALSE;
 	}
 
 	/**
