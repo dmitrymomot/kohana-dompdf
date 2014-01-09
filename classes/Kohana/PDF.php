@@ -1,68 +1,56 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
 /**
- * Подключение библиотеки DOMPDF
- */
-require_once( Kohana::find_file('vendor', 'dompdf/dompdf_config.inc') );
-
-/**
  * Class PDF
+ * @autor Dmitry Momot <dmitry@dimkof.com>
+ * @license MIT
  */
 class Kohana_PDF {
 
 	/**
-	 * Расширение файлов pdf
+	 * PDF files extension
 	 */
 	const EXT = '.pdf';
 
 	/**
-	 * Экземпляр класса DOMPDF
-	 *
-	 * @var class instance
+	 * @param string $html
+	 * @return this class instance
+	 */
+	public static function factory($html)
+	{
+		return new static($html);
+	}
+
+	/**
+	 * @var class instance of DOMPDF
 	 */
 	protected $dompdf;
 
 	/**
-	 * Настройки класса
+	 * @var array
 	 */
 	protected $config;
 
 	/**
-	 * имя PDF-файла
+	 * @var string
 	 */
 	protected $_filename;
 
 	/**
-	 * Конструктор (#кеп)
-	 * Создает экземпляр класса DOMPDF
+	 * @param string $html
+	 * @return void
 	 */
 	public function __construct($html)
 	{
-		// Создание экземпляра класса DOMPDF
-		$this->dompdf 	= new DOMPDF();
+		// Load library DOMPDF
+		Kohana::load( Kohana::find_file('vendor', 'dompdf/dompdf_config.inc') );
 
-		// Формируется "правильный" html, из которого будет формироваться pdf
-		$html = View::factory('html2pdf/base')->set('content', $html)->render();
-
-		// Загрузка html в метод load_html() класса DOMPDF
-		$this->dompdf->load_html($html);
-
-		// Загрузка настроек
-		$this->config = Kohana::$config->load('html2pdf');
+		$this->config = Kohana::$config->load('dompdf')->as_array();
+		$this->dompdf = new DOMPDF();
+		$this->dompdf->load_html(View::factory('dompdf/base')->set('content', $html)->render());
 	}
 
 	/**
-	 * Фабрика.
-	 * Создание экземпляра текущего класса
-	 *
-	 * @return class instance
-	 */
-	public static function factory($html)
-	{
-		return new PDF($html);
-	}
-
-	/*
 	 * @return string filename
 	 */
 	public function get_filename()
@@ -75,15 +63,15 @@ class Kohana_PDF {
 		return $this->_filename;
 	}
 
-	/*
-	 * @return class instance
+	/**
+	 * @param string $filename
+	 * @return $this
 	 */
 	public function set_filename( $filename = NULL )
 	{
 		if ($filename != NULL)
 		{
-			$filename = UTF8::trim(str_replace('.pdf', '', strtolower($filename)), '/');
-
+			$filename = UTF8::trim(str_replace(self::EXT, '', strtolower($filename)), '/');
 			$this->_filename = $filename . self::EXT;
 		}
 		else
@@ -95,9 +83,9 @@ class Kohana_PDF {
 	}
 
 	/**
-	 * Генерирование pdf-файла
+	 * Renders PDF file
 	 *
-	 * @return class instance
+	 * @return $this
 	 */
 	public function render()
 	{
@@ -107,9 +95,11 @@ class Kohana_PDF {
 	}
 
 	/**
-	 * Сохранение PDF на сервере
+	 * Saves on server
 	 *
-	 * @return boolean
+	 * @param string $path
+	 * @param string $name
+	 * @return boolean|string filepath
 	 */
 	public function save($path = NULL, $name = NULL)
 	{
@@ -136,8 +126,9 @@ class Kohana_PDF {
 	}
 
 	/**
-	 * Отдает файл в браузер
+	 * Sends stream to browser
 	 *
+	 * @param string $name
 	 * @return pdf
 	 */
 	public function load($name = NULL)
@@ -151,7 +142,9 @@ class Kohana_PDF {
 	}
 
 	/**
-	 * @param string $dir - your/path
+	 * Sets directory for file saving
+	 *
+	 * @param string $dir
 	 * @return string
 	 */
 	private function get_dir($dir)
